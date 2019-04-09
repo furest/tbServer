@@ -1,0 +1,19 @@
+Bonjour!
+
+Pour installer il suffit de mettre les fichiers de ce dossier dans le même répertoire.
+
+Le script setup.sh installe les packages nécessaires et doit donc être exécuté en tant que root.
+
+Ensuite, il suffit d'exécuter (toujours en tant que root) le script python init.py.
+Ce script crée le VXLAN et les bridges nécessaires et ouvre un VPN vers le serveur.
+
+La connexion peut être fermée avec le script flush.sh.
+
+Les certificats et clés nécessaires à la connexion VPN sont tous inclus dans l'unique fichier ISIL.ovpn.
+
+En ce qui concerne le câblage, le routeur/switch devra être connecté au port ethernet on-board du raspi.
+Ensuite il suffit que le raspi ait accès à internet pour que le reste fonctionne.
+Vous devriez donc pouvoir utiliser un port ethernet USB ou le WIFI pour l'accès internet.
+
+Bien à vous,
+Yannick
