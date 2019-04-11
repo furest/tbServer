@@ -1,0 +1,9 @@
+Hi!
+The academy ${INIT_ACADEMY} has invited you to a laboration on TwinBridge!
+The pin of this lab is ${LAB_PIN}.
+
+To join the lab, go to your TwinBridge device administration page and select "Join a lab".
+You will then be prompted your academy credentials and the PIN of the lab you want to join.
+
+See you later on TwinBridge!
+The TwinBridge team
