@@ -19,7 +19,7 @@ def sendPin(fromAcad,dest, pin):
     msg = MIMEMultipart()
     msg['from'] = config['SMTP_FROM']
     msg['to'] = dest
-    msg['subject'] = "Invitation à un nouveau labo!"
+    msg['subject'] = "You are invited to a new lab!"
 
     msg.attach(MIMEText(message, 'plain'))
     s.send_message(msg)

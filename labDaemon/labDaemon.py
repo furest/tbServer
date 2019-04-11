@@ -5,68 +5,30 @@ from threading import *
 import mysql.connector
 from methods import *
 from listTwinings import *
-
-wpParams = {
-        "host": config['DB_WP_HOST']
-        "user":config['DB_WP_USER'],
-        "passwd":config['DB_WP_PASS'],
-        "database":config['DB_WP_NAME']
-    }
-tbParams = {
-        "host": config['DB_TB_HOST']
-        "user":config['DB_TB_USER'],
-        "passwd":config['DB_TB_PASS'],
-        "database":config['DB_TB_NAME']
-}
-
-import random
-import datetime
-
-def generatePin(length):
-    random.seed(a=None)#Uses system current time
-    pin = random.randint(10**length, int("9"*length))
-    return pin
+import time
 
 
-def createLab(user, dbParams):
-    v_ip = user["VIRT_IP"]
-    userid = user["ID"]
-    db = mysql.connector.connect(**dbParams)
-    c = db.cursor(dictionnary=True)
-    pin = generatePin(config['PIN_LENGTH'])
-    now = time.strftime('%Y-%m-%d %H:%M:%S')
-    newLab = (pin, user["ID"], now)
-    inserted = False
-    while not inserted:
-        try:
-            c.execute("INSERT INTO LABORATIONS(PIN, INIT_ACADEMY, STARTED_AT) VALUES (%s, %s, %s)", newLab)
-        except mysql.connector.InterfaceError:
-            pin = generatePin(config['PIN_LENGTH'])
-            continue
-        inserted = True
-    return {"id":c.lastrowid, "pin":pin}
 
-def answerOK(writer, obj):
-    ans = {"error":False, "response":obj}
-    strAns = json.dumps(ans) + "\n"
-    writer.write(strAns.encode())
-
-def retrieveAcademy(academyId, dbParams):
-    db = mysql.connector.connect(**dbParams)
+def joinLab(user, pin):
+    db = mysql.connector.connect(**tbParams)
     c = db.cursor(dictionary=True)
-    c.execute("SELECT * FROM wp_users WHERE ID = %s", (academyId,))
-    academy = c.fetchone()
-    return academy
-
-def isTwined(academyA, academyB, dbParams):
-    db = mysql.connector.connect(**dbParams)
-    c = db.cursor(dictionary=True)
-    academies = (academyA, academyB, academyA, academyB)
-    c.execute("SELECT * FROM wp_twinings WHERE ACADEMY_1 IN (%s,%s) AND ACADEMY_2 IN (%s,%s) AND ACADEMY_1 != ACADEMY_2",academies)
-    twining = c.fetchone()
-    if twining == None:
+    newLab = (user, pin)
+    c.execute("SELECT * FROM LABORATION WHERE PIN = %s", (pin,))
+    lab = c.fetchone()
+    if lab == None:
+        return None
+    if lab['INVITED_ACADEMY'] != None:
         return False
-    return True
+    lab['INVITED_ACADEMY']
+    c.execute("UPDATE LABORATIONS SET INVITED_ACADEMY = %s WHERE PIN = %s AND INVITED_ACADEMY = NULL", newLab)
+    #Check that a lab has actually been joined
+    if c.rowcount == 0:
+        return False
+    return lab
+
+def startRouting(lab):
+    
+
 
 class labRequestHandler(socketserver.StreamRequestHandler):
     """
@@ -93,13 +55,13 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             return
 
         #Retrieves the email, REAL_IP, REAL_PORT of the requesting user
-        user = retrieveUser(tbParams, self.client_address[0])
+        user = retrieveUser(self.client_address[0])
 
         if(user == None):
             errorRoutine(self.wfile, "IP is not bound to a user")
             return
         if dictData["type"] == "list":
-            twiningsList = listTwinings(user["username"], wpParams)
+            twiningsList = listTwinings(user["username"])
             print("list twinings:", twiningsList)
             answerOK(self.wfile,twiningsList)
             return
@@ -107,11 +69,29 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             if 'invited_id' not in dictData:
                 errorRoutine(self.wfile, "No invited ID given")
                 return
+            initAcademy = retrieveAcademy(email=user['username'])
+            twined = isTwined(initAcademy['ID'], dictData['invited_id'])
+            if twined == False:
+                errorRoutine(self.wfile, "This academy is not twined to the requested academy")
+                return
             lab = createLab(user)
-            isTwined = checkTwining(user['id'], invitedAcademy,wpParams)
-            invitedAcademy = retrieveAcademy(dictData['invited_id'],wpParams)
+            invitedAcademy = retrieveAcademy(id=dictData['invited_id'])
+            sendPin(user['username'], invitedAcademy['user_email'],lab['pin']) 
             answerOK(self.wfile, lab)
-                    
+        elif dictData['type'] == "join":
+            if 'pin' not in dictData or dictData['pin'] == None or type(dictData['pin']) is not int:
+                errorRoutine(self.wfile, "No pin given")
+                return
+            pin = dictData['pin']
+            lab = joinLab(user['ID'], pin)
+            if lab == None:
+                errorRoutine(self.wfile, "Lab does not exist")
+                return
+            if ret == False:
+                errorRoutine(self.wfile, "Lab already full")
+                return
+            startRouting(lab)
+
         else:
             errorRoutine("unknown request type")
 

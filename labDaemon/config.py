@@ -14,3 +14,16 @@ config['DB_TB_USER'] = "vpn"
 config['DB_TB_PASS'] = "vpnpassword"
 config['DB_TB_NAME'] = "twinbridge"
 
+wpParams = {
+        "host": config['DB_WP_HOST'],
+        "user":config['DB_WP_USER'],
+        "passwd":config['DB_WP_PASS'],
+        "database":config['DB_WP_NAME']
+    }
+tbParams = {
+        "host": config['DB_TB_HOST'],
+        "user":config['DB_TB_USER'],
+        "passwd":config['DB_TB_PASS'],
+        "database":config['DB_TB_NAME']
+}
+

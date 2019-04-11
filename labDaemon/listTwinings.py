@@ -1,7 +1,7 @@
 import mysql.connector
-
-def listTwinings(client_id, dbParams):
-    db = mysql.connector.connect(**dbParams)
+from config import *
+def listTwinings(client_id):
+    db = mysql.connector.connect(**wpParams)
     c = db.cursor(dictionary=True)
     client = (client_id, client_id)
     c.execute("SELECT a1.user_login AS login,\
