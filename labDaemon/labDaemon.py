@@ -6,28 +6,40 @@ import mysql.connector
 from methods import *
 from listTwinings import *
 import time
-
+from makeAssociation import *
 
 
 def joinLab(user, pin):
     db = mysql.connector.connect(**tbParams)
     c = db.cursor(dictionary=True)
     newLab = (user, pin)
-    c.execute("SELECT * FROM LABORATION WHERE PIN = %s", (pin,))
-    lab = c.fetchone()
-    if lab == None:
-        return None
-    if lab['INVITED_ACADEMY'] != None:
-        return False
-    lab['INVITED_ACADEMY']
     c.execute("UPDATE LABORATIONS SET INVITED_ACADEMY = %s WHERE PIN = %s AND INVITED_ACADEMY = NULL", newLab)
     #Check that a lab has actually been joined
     if c.rowcount == 0:
         return False
+    c.commit()
+    c.execute("SELECT acInit.ID as initID,\
+                      acInit.VIRT_IP as initVIP,\
+                      acInit.username as initUsername,\
+                      acInvit.ID as invitID,\
+                      acInvit.VIRT_IP as invitVIP,\
+                      acInvit.username as initUsername,\
+                      l.ID as labID,\
+                      l.PIN as PIN,\
+                FROM LABORATIONS AS l\
+                INNER JOIN CONNECTED_CLIENT AS acInit ON l.INIT_ACADEMY = acInit.ACADEMY_ID\
+                INNER JOIN CONNECTED_CLIENT AS acInvit ON l.INVITED_ACADEMY = acInvit.ACADEMY_ID\
+                WHERE PIN = %s", (pin,))
+    lab = c.fetchone()
     return lab
 
 def startRouting(lab):
-    
+     if associate(lab['initVIP'], lab['invitVIP']) == False:
+         return False
+     if associate(lab['invitVIP'], lab['initVIP']) == False:
+         return False
+
+        
 
 
 class labRequestHandler(socketserver.StreamRequestHandler):
