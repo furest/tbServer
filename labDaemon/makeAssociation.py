@@ -40,6 +40,30 @@ def associate(from_ip, to_ip):
     chain_nat_PREROUTING.insert_rule(rule_nat_dnat)
     table_filter.commit()
     table_nat.commit()
+    table_filter.autocommit = True
+    table_nat.autocommit = True
+    return True
+
+def deAssociate(from_ip, to_ip):
+    table_filter = iptc.Table(iptc.Table.FILTER)
+    table_filter.Autocommit = False
+    table_nat = iptc.Table(iptc.Table.NAT)
+    table_nat.Autocommit = False
+
+    chain_filter_FORWARD = iptc.Chain(table_filter, "VPN_FW")
+    chain_nat_PREROUTING = iptc.Chain(table_nat, "PREROUTING")
+
+    for rule in chain_filter_FORWARD.rules:
+        if rule.from_ip and rule.from_ip.split('/') == from_ip:
+            if rule.to_ip and rule.to_ip.split('/') == to_ip:
+                chain_filter_FORWARD.delete_rule(rule)
+    for rule in chain_nat_PREROUTING
+        if rule.src and rule.src == from_ip:
+            chain_nat_PREROUTING.delete_rule(rule)
+    table_filter.commit()
+    table_nat.commit()
+    table_filter.autocommit = True
+    table_nat.autocommit = True
     return True
 
 

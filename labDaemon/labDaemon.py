@@ -32,15 +32,22 @@ def joinLab(user, pin):
                 WHERE PIN = %s", (pin,))
     lab = c.fetchone()
     return lab
+def quitLab(user):
+    db = mysql.connector.connect(**tbParams)
+    c = db.cursor(dictionary=True)
+    c.execute("UPDATE LABORATIONS SET INVITED_ACADEMY = NULL WHERE INVITED_ACADEMY = %s", (user,))
+    c.commit()
 
 def startRouting(lab):
      if associate(lab['initVIP'], lab['invitVIP']) == False:
          return False
      if associate(lab['invitVIP'], lab['initVIP']) == False:
          return False
-
+    return True
         
-
+def stopRouting(lab)
+    deAssociate(lab['initVIP'], lab['invitVIP'])
+    deAssociate(lab['invitVIP'], lab['initVIP'])
 
 class labRequestHandler(socketserver.StreamRequestHandler):
     """
@@ -48,7 +55,7 @@ class labRequestHandler(socketserver.StreamRequestHandler):
     myself.request = socket to the client
     self.server = the server
     self.client_address = client's address
-    self.rfile/self.wfile = file like 
+    self.rfile/self.wfile = file like socket
     """
 
     def handle(self):
@@ -102,8 +109,10 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             if ret == False:
                 errorRoutine(self.wfile, "Lab already full")
                 return
-            startRouting(lab)
-
+            if startRouting(lab) == False:
+                errorRoutine(self.wfile, "An error occurred while establishing routing")
+                stopRouting(lab)
+                quitLab(user['ID'])
         else:
             errorRoutine("unknown request type")
 
