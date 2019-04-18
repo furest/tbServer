@@ -11,7 +11,7 @@ def getTemplate(fileName):
     return Template(content)
 
 def sendPin(fromAcad,dest, pin):
-    template = getTemplate("labDaemon/pinMailTemplate.txt")
+    template = getTemplate("/home/halm/tbServerRepo/labDaemon/pinMailTemplate.txt")
     message = template.substitute(INIT_ACADEMY=fromAcad,LAB_PIN=pin)
     s = smtplib.SMTP(host=config['SMTP_SRV'], port=config['SMTP_PORT'])
     s.starttls()

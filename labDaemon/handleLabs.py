@@ -4,6 +4,21 @@ from makeAssociation import *
 from methods import *
 import time
 
+def invitedLabs(userid):
+    db = mysql.connector.connect(**tbParams)
+    c = db.cursor(dictionary=True)
+    c.execute("SELECT * FROM LABORATIONS WHERE INVITED_ACADEMY = %s", (userid,))
+    lab = c.fetchone()
+    return lab
+
+def hostedLabs(userid):
+    db = mysql.connector.connect(**tbParams)
+    c = db.cursor(dictionary=True)
+    c.execute("SELECT * FROM LABORATIONS WHERE INIT_ACADEMY = %s", (userid,))
+    lab = c.fetchone()
+    return lab
+
+
 def createLab(user):
     v_ip = user["VIRT_IP"]
     userid = user["ID"]
@@ -16,8 +31,13 @@ def createLab(user):
     while not inserted:
         try:
             c.execute("INSERT INTO LABORATIONS(PIN, INIT_ACADEMY, STARTED_AT) VALUES (%s, %s, %s)", newLab)
-        except mysql.connector.InterfaceError:
-            pin = generatePin(config['PIN_LENGTH'])
+        except mysql.connector.InterfaceError as e:
+            if "PIN" in e.msg:
+                pin = generatePin(config['PIN_LENGTH'])
+            elif "INIT_ACADEMY" in e.msg:
+                c.execute("SELECT * FROM LABORATIONS WHERE INIT_ACADEMY = %s", (userid,))
+                lab = c.fetchone()
+                return lab
             continue
         inserted = True
     db.commit()
@@ -47,6 +67,12 @@ def joinLab(user, pin):
                 WHERE PIN = %s", (int(pin),))
     lab = c.fetchone()
     return lab
+
+def deleteLab(lab):
+    db = mysql.connector.connect(**tbParams)
+    c = db.cursor(dictionary=True)
+    c.execute("DELETE FROM LABORATIONS WHERE ID = %s", (lab['ID'],))
+    c.commit()
 
 def quitLab(user):
     db = mysql.connector.connect(**tbParams)

@@ -42,12 +42,14 @@ class labRequestHandler(socketserver.StreamRequestHandler):
         if(user == None):
             errorRoutine(self.wfile, "IP is not bound to a user")
             return
+
         if dictData["type"] == "list":
             twiningsList = listTwinings(user["username"])
             print("list twinings:", twiningsList)
             answerOK(self.wfile,twiningsList)
             return
         elif dictData["type"] == "create":
+            #Checks that the message contains the ID of the incited academy
             if 'invited_id' not in dictData:
                 errorRoutine(self.wfile, "No invited ID given")
                 return
@@ -56,6 +58,10 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             if twined == False:
                 errorRoutine(self.wfile, "This academy is not twined to the requested academy")
                 return
+            invitedLab = invitedLabs(user)
+            if invitedLab != None:
+                quitLab(user)
+                deAssociate(invitedLab)
             lab = createLab(user)
             invitedAcademy = retrieveAcademy(id=dictData['invited_id'])
             sendPin(user['username'], invitedAcademy['user_email'],lab['pin']) 
@@ -65,7 +71,14 @@ class labRequestHandler(socketserver.StreamRequestHandler):
                 errorRoutine(self.wfile, "No pin given")
                 return
             pin = dictData['pin']
-            lab = joinLab(user['ID'], pin)
+            hostedLab = hostedLabs(user['ID'])
+            if hostedLab != None:
+                deleteLab(hostedLab)
+                deAssociate(hostedLab)
+            try:
+                lab = joinLab(user['ID'], pin)
+            except:
+                errorRoutine(self.wfile, "User is already part of another lab!")
             if lab == None:
                 errorRoutine(self.wfile, "Lab does not exist")
                 return
