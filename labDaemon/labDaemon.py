@@ -7,47 +7,10 @@ from methods import *
 from listTwinings import *
 import time
 from makeAssociation import *
+from sendMail import *
+from pipeListener import *
+from handleLabs import *
 
-
-def joinLab(user, pin):
-    db = mysql.connector.connect(**tbParams)
-    c = db.cursor(dictionary=True)
-    newLab = (user, pin)
-    c.execute("UPDATE LABORATIONS SET INVITED_ACADEMY = %s WHERE PIN = %s AND INVITED_ACADEMY = NULL", newLab)
-    #Check that a lab has actually been joined
-    if c.rowcount == 0:
-        return False
-    c.commit()
-    c.execute("SELECT acInit.ID as initID,\
-                      acInit.VIRT_IP as initVIP,\
-                      acInit.username as initUsername,\
-                      acInvit.ID as invitID,\
-                      acInvit.VIRT_IP as invitVIP,\
-                      acInvit.username as initUsername,\
-                      l.ID as labID,\
-                      l.PIN as PIN,\
-                FROM LABORATIONS AS l\
-                INNER JOIN CONNECTED_CLIENT AS acInit ON l.INIT_ACADEMY = acInit.ACADEMY_ID\
-                INNER JOIN CONNECTED_CLIENT AS acInvit ON l.INVITED_ACADEMY = acInvit.ACADEMY_ID\
-                WHERE PIN = %s", (pin,))
-    lab = c.fetchone()
-    return lab
-def quitLab(user):
-    db = mysql.connector.connect(**tbParams)
-    c = db.cursor(dictionary=True)
-    c.execute("UPDATE LABORATIONS SET INVITED_ACADEMY = NULL WHERE INVITED_ACADEMY = %s", (user,))
-    c.commit()
-
-def startRouting(lab):
-     if associate(lab['initVIP'], lab['invitVIP']) == False:
-         return False
-     if associate(lab['invitVIP'], lab['initVIP']) == False:
-         return False
-    return True
-        
-def stopRouting(lab)
-    deAssociate(lab['initVIP'], lab['invitVIP'])
-    deAssociate(lab['invitVIP'], lab['initVIP'])
 
 class labRequestHandler(socketserver.StreamRequestHandler):
     """
@@ -98,7 +61,7 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             sendPin(user['username'], invitedAcademy['user_email'],lab['pin']) 
             answerOK(self.wfile, lab)
         elif dictData['type'] == "join":
-            if 'pin' not in dictData or dictData['pin'] == None or type(dictData['pin']) is not int:
+            if 'pin' not in dictData or dictData['pin'] == None :
                 errorRoutine(self.wfile, "No pin given")
                 return
             pin = dictData['pin']
@@ -106,20 +69,25 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             if lab == None:
                 errorRoutine(self.wfile, "Lab does not exist")
                 return
-            if ret == False:
+            if lab == False:
                 errorRoutine(self.wfile, "Lab already full")
                 return
+            print("Starting routing")
             if startRouting(lab) == False:
+                print("routing failed!")
                 errorRoutine(self.wfile, "An error occurred while establishing routing")
                 stopRouting(lab)
                 quitLab(user['ID'])
+                return
+            answerOK(self.wfile, {})
         else:
             errorRoutine("unknown request type")
 
 if __name__ == "__main__":
     
-    HOST, PORT = "172.16.100.1", 1500
-    
-    server = socketserver.ThreadingTCPServer((HOST, PORT), labRequestHandler)
+    listener = PipeListener(config['PIPE'])
+    listener.start()
+
+    server = socketserver.ThreadingTCPServer((config['SRV_IP'], config['SRV_PORT']), labRequestHandler)
     print("Server created. Now serving")
     server.serve_forever()

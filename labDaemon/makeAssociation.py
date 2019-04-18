@@ -54,11 +54,11 @@ def deAssociate(from_ip, to_ip):
     chain_nat_PREROUTING = iptc.Chain(table_nat, "PREROUTING")
 
     for rule in chain_filter_FORWARD.rules:
-        if rule.from_ip and rule.from_ip.split('/') == from_ip:
-            if rule.to_ip and rule.to_ip.split('/') == to_ip:
+        if rule.src.split('/')[0] == from_ip:
+            if rule.dst.split('/')[0] == to_ip:
                 chain_filter_FORWARD.delete_rule(rule)
-    for rule in chain_nat_PREROUTING
-        if rule.src and rule.src == from_ip:
+    for rule in chain_nat_PREROUTING.rules:
+        if rule.src.split("/")[0] == from_ip:
             chain_nat_PREROUTING.delete_rule(rule)
     table_filter.commit()
     table_nat.commit()
