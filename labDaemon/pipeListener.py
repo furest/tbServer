@@ -4,7 +4,8 @@ import threading
 from config import *
 import errno
 import socket
-
+from methods import *
+from makeAssociation import *
 def occupied(filename):
     f = Path(filename)
     return f.exists()
@@ -26,32 +27,6 @@ def createPipe(filename):
     os.chmod(filename, 0o620)
     return True
 
-def delete_association(virt_ip):
-    print("deleting association of", virt_ip)
-    table_filter = iptc.Table(iptc.Table.FILTER)
-    table_filter.Autocommit = False
-    table_nat = iptc.Table(iptc.Table.NAT)
-    table_nat.Autocommit = False
-
-    chain_filter_FORWARD = iptc.Chain(table_filter, "VPN_FW")
-    chain_nat_PREROUTING = iptc.Chain(table_nat, "PREROUTING")
-
-    for rule in chain_filter_FORWARD.rules:
-        if rule.src.split('/')[0]  == virt_ip\
-                or rule.dst.split('/')[0] == virt_ip:
-            chain_filter_FORWARD.delete_rule(rule)
-            print("rule deleted")
-    for rule in chain_nat_PREROUTING.rules:
-        if rule.src.split("/")[0] == virt_ip\
-                or rule.target.parameters.get("to_destination", "") == virt_ip:
-            chain_nat_PREROUTING.delete_rule(rule)
-            print("rule deleted")
-    table_filter.commit()
-    table_nat.commit()
-    table_filter.autocommit = True
-    table_nat.autocommit = True
-    return True
-
 class PipeListener(threading.Thread):
     def __init__(self, pipePath):
         threading.Thread.__init__(self)
@@ -61,17 +36,20 @@ class PipeListener(threading.Thread):
         
     def run(self):
         createPipe(self.pipePath)
-        pipe = open(self.pipePath, "r")
+        pipe = open(self.pipePath, "rt")
         while 1:
             for address in pipe:
+                print(address)
                 address = address.strip()
+                print(address)
                 print("[" + address + "]")
                 try:
                     socket.inet_aton(address)
                     delete_association(address)
-                except:
+                except Exception as e:
                     print("not an address")
                     #address was not an IPv4 address
+                    print(e)
                     continue
 
 

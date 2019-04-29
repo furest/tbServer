@@ -7,8 +7,6 @@ import sys
 from passlib.hash import phpass
 
 
-log = open("/ovpn/wordpress.log", "a")
-sys.stdout = log
 def validateUser(username, password):
     q = "SELECT * FROM wp_users WHERE user_email = %s"
     usr = (username,)
@@ -20,7 +18,6 @@ def validateUser(username, password):
     hashedpass = res['user_pass']
 #    print("Hashed pass = %s" % hashedpass)
     if phpass.verify(secret=password.encode('utf-8'), hash=hashedpass):
-    #if crypt.crypt(password, hashedpass) == password:
         print("login successful")
         return True
     else:

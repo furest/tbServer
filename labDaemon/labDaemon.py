@@ -58,10 +58,10 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             if twined == False:
                 errorRoutine(self.wfile, "This academy is not twined to the requested academy")
                 return
-            invitedLab = invitedLabs(user)
+            invitedLab = invitedLabs(user['ID'])
             if invitedLab != None:
-                quitLab(user)
-                deAssociate(invitedLab)
+                quitLab(user['ID'])
+                delete_association(self.client_address[0])
             lab = createLab(user)
             invitedAcademy = retrieveAcademy(id=dictData['invited_id'])
             sendPin(user['username'], invitedAcademy['user_email'],lab['pin']) 
@@ -73,8 +73,11 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             pin = dictData['pin']
             hostedLab = hostedLabs(user['ID'])
             if hostedLab != None:
+                if pin == hostedLab['PIN']:
+                    errorRoutine(self.wfile, "You cannot join your own lab!")
+                    return
                 deleteLab(hostedLab)
-                deAssociate(hostedLab)
+                delete_association(self.client_address[0])
             try:
                 lab = joinLab(user['ID'], pin)
             except:

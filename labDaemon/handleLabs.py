@@ -72,13 +72,13 @@ def deleteLab(lab):
     db = mysql.connector.connect(**tbParams)
     c = db.cursor(dictionary=True)
     c.execute("DELETE FROM LABORATIONS WHERE ID = %s", (lab['ID'],))
-    c.commit()
+    db.commit()
 
-def quitLab(user):
+def quitLab(userId):
     db = mysql.connector.connect(**tbParams)
     c = db.cursor(dictionary=True)
-    c.execute("UPDATE LABORATIONS SET INVITED_ACADEMY = NULL WHERE INVITED_ACADEMY = %s", (user,))
-    c.commit()
+    c.execute("UPDATE LABORATIONS SET INVITED_ACADEMY = NULL WHERE INVITED_ACADEMY = %s", (userId,))
+    db.commit()
 
 def startRouting(lab):
      if associate(lab['initVIP'], lab['invitVIP']) == False:
@@ -88,6 +88,4 @@ def startRouting(lab):
      return True
 
 def stopRouting(lab):
-    deAssociate(lab['initVIP'], lab['invitVIP'])
-    deAssociate(lab['invitVIP'], lab['initVIP'])
-
+    delete_association(lab['initVIP'])
