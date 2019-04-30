@@ -1,7 +1,9 @@
 config = dict()
 
-config['SRV_IP'] = "172.16.100.1"
-config['SRV_PORT'] = 1500
+config['UDP_SRV_IP'] = "172.16.100.1"
+config['UDP_SRV_PORT'] = 1500
+config['TCP_SRV_IP'] = "172.16.100.129"
+config['TCP_SRV_PORT'] = 1500
 config['PIPE'] = "/tbpipe"
 config['PIN_LENGTH'] = 6
 config['SMTP_SRV'] = "smtp.gmail.com"
