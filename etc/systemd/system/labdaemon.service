@@ -1,0 +1,12 @@
+[Unit]
+Description=Service that runs to establish laborations between TwinBridge clients
+After=openvpn@TCPServer.service openvpn@UDPServer.service
+BindsTo=openvpn@TCPServer.service openvpn@UDPServer.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/halm/tbServerRepo/labDaemon
+ExecStart=/usr/bin/python3 labDaemon.py
+
+[Install]
+WantedBy=multi-user.target
