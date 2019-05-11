@@ -2,6 +2,28 @@
 
 import iptc,sys
 
+
+
+def makeFWRule(from_ip, to_ip):
+    rule_fw = iptc.Rule()
+    rule_fw.src = from_ip
+    rule_fw.dst = to_ip
+    rule_fw.protocol = "udp"
+    match_fw= rule_fw.create_match('udp')
+    match_fw.dport = '4789'
+    target_fw = rule_fw.create_target("ACCEPT")
+    return rule_fw
+
+def makeNATRule(from_ip, to_ip):
+    rule_nat_dnat = iptc.Rule()
+    rule_nat_dnat.src = from_ip
+    rule_nat_dnat.protocol = "udp"
+    match_nat_dnat = rule_nat_dnat.create_match("udp")
+    match_nat_dnat.dport = "4789"
+    target_nat_dnat = rule_nat_dnat.create_target("DNAT")
+    target_nat_dnat.to_destination = to_ip
+    return rule_nat_dnat
+
 def associate(from_ip, to_ip):
     table_filter = iptc.Table(iptc.Table.FILTER)
     table_filter.Autocommit = False
@@ -10,34 +32,31 @@ def associate(from_ip, to_ip):
 
     chain_filter_FORWARD = iptc.Chain(table_filter, "VPN_FW")
     chain_nat_PREROUTING = iptc.Chain(table_nat, "PREROUTING")
-    #"Create iptables rules for relaying vxlan traffic from host A to B. Unidirectional."
-    nb_associations = 0
 
+    skipAB = False
     for rule in chain_filter_FORWARD.rules:
-        if rule.src.split('/') == from_ip:
-            return False
-            #There is already a rule with this address!!
+        if rule.src.split('/')[0] == from_ip or rule.dst.split('/')[0] == from_ip:
+           print("association from", from_ip, "to", to_ip, "has been skippep because already present.")
+           return False
 
-    #Allow traffic from from_ip to to_ip in table filter, chain FORWARD
-    rule_fw = iptc.Rule()
-    rule_fw.src = from_ip
-    rule_fw.dst = to_ip
-    rule_fw.protocol = "udp"
-    match_fw= rule_fw.create_match('udp')
-    match_fw.dport = '4789'
-    target_fw = rule_fw.create_target("ACCEPT")
-    chain_filter_FORWARD.insert_rule(rule_fw)
-    #Searches for associations with A
+    skipBA = False
+    for rule in chain_filter_FORWARD.rules:
+        if rule.src.split('/')[0] == to_ip or rule.dst.split('/')[0] == to_ip:
+           print("association from", to_ip, "to", from_ip, "has been skippep because already present.")
+           return False
 
-    #traffic must go through DNAT for each destination association it has
-    rule_nat_dnat = iptc.Rule()
-    rule_nat_dnat.src = from_ip
-    rule_nat_dnat.protocol = "udp"
-    match_nat_dnat = rule_nat_dnat.create_match("udp")
-    match_nat_dnat.dport = "4789"
-    target_nat_dnat = rule_nat_dnat.create_target("DNAT")
-    target_nat_dnat.to_destination = to_ip
-    chain_nat_PREROUTING.insert_rule(rule_nat_dnat)
+    if not skipAB:
+        FWRuleAB = makeFWRule(from_ip, to_ip)
+        chain_filter_FORWARD.insert_rule(FWRuleAB)
+        NATRuleAB = makeNATRule(from_ip, to_ip)
+        chain_nat_PREROUTING.insert_rule(NATRuleAB)
+
+    if not skipBA:
+        FWRuleBA = makeFWRule(to_ip, from_ip)
+        chain_filter_FORWARD.insert_rule(FWRuleBA)
+        NATRuleBA = makeNATRule(to_ip, from_ip)
+        chain_nat_PREROUTING.insert_rule(NATRuleBA)
+
     table_filter.commit()
     table_nat.commit()
     table_filter.autocommit = True

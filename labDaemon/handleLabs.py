@@ -4,6 +4,25 @@ from makeAssociation import *
 from methods import *
 import time
 
+def getLabDetails(labId):
+    db = mysql.connector.connect(**tbParams)
+    c = db.cursor(dictionary=True)
+    c.execute("""SELECT 
+                 lab.ID as lab_id,
+                 lab.PIN as lab_pin,
+                 DATE_FORMAT(lab.STARTED_AT, "%Y-%m-%d %H:%i:%S") as lab_starttime,
+                 lab.INIT_ACADEMY as init_id,
+                 initacademy.username as init_username,
+                 initacademy.VIRT_IP as init_ip,
+                 lab.INVITED_ACADEMY as invit_id,
+                 invitedacademy.username as invit_username,
+                 invitedacademy.VIRT_IP as invit_ip
+                FROM LABORATIONS as lab
+                LEFT JOIN CONNECTED_CLIENTS as initacademy ON initacademy.ID = lab.INIT_ACADEMY
+                LEFT JOIN CONNECTED_CLIENTS as invitedacademy ON invitedacademy.ID = lab.INVITED_ACADEMY
+                WHERE lab.ID = %s""", (labId,))
+    lab = c.fetchone()
+    return lab
 def invitedLabs(userid):
     db = mysql.connector.connect(**tbParams)
     c = db.cursor(dictionary=True)
@@ -31,13 +50,13 @@ def createLab(user):
     while not inserted:
         try:
             c.execute("INSERT INTO LABORATIONS(PIN, INIT_ACADEMY, STARTED_AT) VALUES (%s, %s, %s)", newLab)
-        except mysql.connector.InterfaceError as e:
+        except mysql.connector.errors.IntegrityError as e:
             if "PIN" in e.msg:
                 pin = generatePin(config['PIN_LENGTH'])
             elif "INIT_ACADEMY" in e.msg:
                 c.execute("SELECT * FROM LABORATIONS WHERE INIT_ACADEMY = %s", (userid,))
                 lab = c.fetchone()
-                return lab
+                return {"id":lab['ID'], "pin":lab['PIN']}
             continue
         inserted = True
     db.commit()
@@ -82,8 +101,6 @@ def quitLab(userId):
 
 def startRouting(lab):
      if associate(lab['initVIP'], lab['invitVIP']) == False:
-         return False
-     if associate(lab['invitVIP'], lab['initVIP']) == False:
          return False
      return True
 

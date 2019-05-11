@@ -111,6 +111,21 @@ class labRequestHandler(socketserver.StreamRequestHandler):
                 quitLab(user['ID'])
                 return
             self.answerOK({})
+        elif dictData['type'] == "status":
+            invited = None
+            hosted = hostedLabs(user['ID'])
+            if hosted == None:
+                invited = invitedLabs(user['ID'])
+                if invited != None:
+                    fullLab = getLabDetails(invited['ID'])
+                    self.answerOK({"status":"hosting", "lab":fullLab})
+                    return
+            else:
+                fullLab = getLabDetails(hosted['ID'])
+                self.answerOK({"status":"hosting", "lab":fullLab})
+                return
+            self.answerOK({"status":"free"})
+            return
         else:
             self.errorRoutine("unknown request type")
 
@@ -119,8 +134,12 @@ if __name__ == "__main__":
     listener = PipeListener(config['PIPE'])
     listener.start()
 
-    udpServer = socketserver.ThreadingTCPServer((config['UDP_SRV_IP'], config['UDP_SRV_PORT']), labRequestHandler)
-    tcpServer = socketserver.ThreadingTCPServer((config['TCP_SRV_IP'], config['TCP_SRV_PORT']), labRequestHandler)
-    print("Server created. Now serving")
-    _thread.start_new_thread(udpServer.serve_forever,())
-    _thread.start_new_thread(tcpServer.serve_forever,())
+    try:
+        udpServer = socketserver.ThreadingTCPServer((config['UDP_SRV_IP'], config['UDP_SRV_PORT']), labRequestHandler)
+        tcpServer = socketserver.ThreadingTCPServer((config['TCP_SRV_IP'], config['TCP_SRV_PORT']), labRequestHandler)
+        _thread.start_new_thread(udpServer.serve_forever,())
+        _thread.start_new_thread(tcpServer.serve_forever,())
+        print("Server created. Now serving")
+    except Exception as e:
+        print(e)
+        os._exit(1)

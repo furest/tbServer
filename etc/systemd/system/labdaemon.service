@@ -7,6 +7,7 @@ BindsTo=openvpn@TCPServer.service openvpn@UDPServer.service
 Type=simple
 WorkingDirectory=/home/halm/tbServerRepo/labDaemon
 ExecStart=/usr/bin/python3 labDaemon.py
-
+RestartSec=10
+Restart=always
 [Install]
 WantedBy=multi-user.target
