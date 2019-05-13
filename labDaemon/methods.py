@@ -2,17 +2,6 @@ import json
 import mysql.connector
 from config import *
 import random
-#def errorRoutine(writable, message):
-#    jsonError = { "error":True, "message":message}
-#    strError = json.dumps(jsonError) + "\n"
-#    print("Answered ", strError)
-#    writable.write(strError.encode())
-
-#def answerOK(writer, obj):
-#    ans = {"error":False, "response":obj}
-#    print("Answered ", ans)
-#    strAns = json.dumps(ans) + "\n"
-#    writer.write(strAns.encode())
 
 def retrieveUser(address):
     db = mysql.connector.connect(**tbParams)

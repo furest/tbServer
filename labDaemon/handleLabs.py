@@ -66,10 +66,14 @@ def createLab(user):
 def joinLab(user, pin):
     db = mysql.connector.connect(**tbParams)
     c = db.cursor(dictionary=True)
-    newLab = (user, int(pin))
+    newLab = (user, pin)
     c.execute("UPDATE LABORATIONS SET INVITED_ACADEMY = %s WHERE PIN = %s AND INVITED_ACADEMY IS NULL", newLab)
     #Check that a lab has actually been joined
     if c.rowcount == 0:
+        c.execute("SELECT * FROM LABORATIONS WHERE PIN = %s", (pin,))
+        lab = c.fetchone()
+        if lab == None:
+            return None
         return False
     db.commit()
     c.execute("SELECT acInit.ID as initID,\

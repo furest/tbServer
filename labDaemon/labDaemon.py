@@ -24,7 +24,7 @@ class labRequestHandler(socketserver.StreamRequestHandler):
         print("[" + "]:",message)
 
     def errorRoutine(self, message):
-        jsonError = { "error":True, "message":message}
+        jsonError = { "error":True, "reason":message}
         strError = json.dumps(jsonError) + "\n"
         self.log("Answered " + strError)
         self.wfile.write(strError.encode())
@@ -82,7 +82,7 @@ class labRequestHandler(socketserver.StreamRequestHandler):
             sendPin(user['username'], invitedAcademy['user_email'],lab['pin']) 
             self.answerOK(lab)
         elif dictData['type'] == "join":
-            if 'pin' not in dictData or dictData['pin'] == None :
+            if 'pin' not in dictData or dictData['pin'] == None or dictData['pin'] == "":
                 self.errorRoutine("No pin given")
                 return
             pin = dictData['pin']
@@ -93,10 +93,8 @@ class labRequestHandler(socketserver.StreamRequestHandler):
                     return
                 deleteLab(hostedLab)
                 delete_association(self.client_address[0])
-            try:
-                lab = joinLab(user['ID'], pin)
-            except:
-                self.errorRoutine("User is already part of another lab!")
+            
+            lab = joinLab(user['ID'], pin)
             if lab == None:
                 self.errorRoutine("Lab does not exist")
                 return
@@ -118,7 +116,7 @@ class labRequestHandler(socketserver.StreamRequestHandler):
                 invited = invitedLabs(user['ID'])
                 if invited != None:
                     fullLab = getLabDetails(invited['ID'])
-                    self.answerOK({"status":"hosting", "lab":fullLab})
+                    self.answerOK({"status":"invited", "lab":fullLab})
                     return
             else:
                 fullLab = getLabDetails(hosted['ID'])
