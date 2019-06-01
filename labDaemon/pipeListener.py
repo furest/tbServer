@@ -36,21 +36,22 @@ class PipeListener(threading.Thread):
         
     def run(self):
         createPipe(self.pipePath)
-        pipe = open(self.pipePath, "rt")
-        while 1:
-            for address in pipe:
-                print(address)
-                address = address.strip()
-                print(address)
-                print("[" + address + "]")
-                try:
-                    socket.inet_aton(address)
-                    delete_association(address)
-                except Exception as e:
-                    print("not an address")
-                    #address was not an IPv4 address
-                    print(e)
-                    continue
+        while True:
+            with open(self.pipePath, "rt") as pipe:
+                while True:
+                    address = pipe.readline()
+                    address = address.strip()
+                    if address == "":
+                        break
+                    print("[" + address + "]")
+                    try:
+                        socket.inet_aton(address)
+                        delete_association(address)
+                    except Exception as e:
+                        print("not an address")
+                        #address was not an IPv4 address
+                        print(e)
+                        continue
 
 
 if __name__ == "__main__":
