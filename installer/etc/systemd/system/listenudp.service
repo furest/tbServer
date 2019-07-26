@@ -1,0 +1,11 @@
+[Unit]
+Description=Service that answers a null UDP packet to every null UDP packet received
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/halm/tbServerRepo/listenUDP/
+ExecStart=/usr/bin/python3 listenUDP.py
+
+[Install]
+WantedBy=multi-user.target
