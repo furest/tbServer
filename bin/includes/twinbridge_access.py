@@ -54,8 +54,13 @@ def delete_tuple(table, ID):
     db = mysql.connector.connect(**tbParams)
     c = db.cursor(dictionary=True)
     req = "DELETE FROM " + table + " WHERE ID=%s"
-    c.execute(req, (ID,))
-    db.commit()
+    try:
+        c.execute(req, (ID,))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
+
     return True
 
 def insert_connected_client(ID, virt_ip=None, real_ip=None, real_port=None):
@@ -65,8 +70,12 @@ def insert_connected_client(ID, virt_ip=None, real_ip=None, real_port=None):
     c = db.cursor(dictionary=True)
     req = "INSERT INTO connected_clients (ID, virt_ip, real_ip, real_port) VALUES (%s, %s, %s, %s)"
     req_tuple = (ID, virt_ip, real_ip, real_port)
-    c.execute(req, req_tuple)
-    db.commit()
+    try:
+        c.execute(req, req_tuple)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
     return ID
     
 
@@ -77,10 +86,15 @@ def insert_lab(init_academy, pin=None, invited_academy=None, over=False):
     c = db.cursor(dictionary=True)
     req = "INSERT INTO laborations (pin, init_academy, invited_academy, over) VALUES (%s,%s,%s,%s)"
     req_tuple = (pin, init_academy, invited_academy, over)
-    c.execute(req, req_tuple)
-    lastrowid = c.lastrowid
     db.commit()
-    return c.lastrowid
+    try:
+        c.execute(req, req_tuple)
+        lastrowid = c.lastrowid
+        db.commit()
+        return lastrowid
+    except Exception as e:
+        db.rollback()
+        raise e
 
 def get_lab(ID=None, pin=None, init_academy=None, invited_academy=None, started_at=None, over=None):
     db = mysql.connector.connect(**tbParams)
@@ -181,7 +195,12 @@ def update_tuple(table, ID, **data):
         need_comma = True
     req += " WHERE ID=%s"
     req_tuple = req_tuple + (ID,)
-    c.execute(req, req_tuple)
-    db.commit()
+    try:
+        c.execute(req, req_tuple)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
+
     return True
  

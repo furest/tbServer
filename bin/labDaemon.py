@@ -15,6 +15,7 @@ from includes.pipeListener import *
 import includes.wordpress_access as wp
 import includes.twinbridge_access as tb
 from includes.labCleaner import *
+from includes.labAnalyser import *
 class labRequestHandler(socketserver.StreamRequestHandler):
     """
     Handles the requests.
@@ -216,6 +217,10 @@ if __name__ == "__main__":
         _thread.start_new_thread(tcpServer.serve_forever,())
         print("Server created. Now serving")
         lm = LabCleaner()
+        print("LabCleaner launched")
+        la = LabAnalyzer()
+        la.start()
+        print("LabAnalyzer started")
 
     except Exception as e:
         print(e)

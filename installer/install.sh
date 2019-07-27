@@ -73,11 +73,11 @@ function install_complete() {
 
 function install_apt_packages() {
     sudo apt-get update
-    sudo apt-get install openvpn mariadb-server python3 python3-pip git
+    sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump
 }
 
 function install_pip_packages() {
-    sudo pip3 install passlib python-iptables
+    sudo pip3 install passlib python-iptables scapy
 }
 
 function create_services() {
@@ -102,8 +102,13 @@ function configure_mysql() {
     tb_password=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-10};echo;`
     sudo mysql --database twinbridge --execute="CREATE USER 'twinbridge'@'localhost' IDENTIFIED BY ${tb_password}; GRANT ALL ON twinbridge.* to 'twinbridge'@'localhost'; FLUSH PRIVILEGES;"
 }
+
 function erase_installfiles() {
     sudo rm -r "${install_dir}/installer"
+}
+
+function configure_iptables() {
+    sudo bash $install_dir/scripts/init_iptables.sh
 }
 function install_raspap() {
     display_welcome

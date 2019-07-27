@@ -7,11 +7,11 @@ import fcntl
 import includes.wordpress_access as wp
 import includes.twinbridge_access as tb
 from includes.config import *
-
+import mysql.connector
 def write_pipe(method, data):
     f = None
     try: 
-        f = os.open(config['PIPE_PATH'], os.O_WRONLY | os.O_NONBLOCK)
+        f = os.open(config['PIPE'], os.O_WRONLY | os.O_NONBLOCK)
         req = method + " " + data + "\n"
         os.write(f, req.encode())
     except Exception as e:
@@ -49,7 +49,19 @@ if __name__ == "__main__":
                 write_pipe("DELETE", connected_client['virt_ip'])
             tb.update_connected_client(ID=connected_client[0]['ID'], virt_ip = client_virt_ip, real_port = client_r_port, real_ip = client_r_ip)
         else:
-             tb.insert_connected_client(user['ID'], client_virt_ip, client_r_ip, client_r_port)
+            try:
+                tb.insert_connected_client(user['ID'], client_virt_ip, client_r_ip, client_r_port)
+            except mysql.connector.errors.IntegrityError as e:
+                if "PRIMARY" in e.msg:
+                    print("WARNING: Previous user wasn't erase from database or a user with the same ID is already connected!")
+                    print("Erasing older user")
+                    old_client = tb.get_connected_client(ID=user['ID'])
+                    if len(old_client) > 0:
+                        tb.delete_connected_client(ID=user['ID'])
+                        write_pipe("DELETE", old_client[0]['virt_ip'])
+                    tb.insert_connected_client(user['ID'], client_virt_ip, client_r_ip, client_r_port)
+
+
 
         labs = tb.get_lab(init_academy=user['ID'], over=False)
         other_user_id = None
@@ -69,7 +81,8 @@ if __name__ == "__main__":
         if len(other_user) == 0:
             #Other user is disconnected. Quit.
             sys.exit(0)
-        write_pipe("ROUTE", client_virt_ip, other_useri[0]['virt_ip'])
+        print("Establishing routing between", client_virt_ip,"and", other_user[0]['virt_ip'])
+        write_pipe("ROUTE", client_virt_ip + " " +  other_user[0]['virt_ip'])
         sys.exit(0)
     elif current_mode == "delete":
         connected_client = tb.get_connected_client(virt_ip=client_virt_ip)

@@ -113,5 +113,3 @@ if __name__ == "__main__":
 
     if associate(ip_A, ip_B) == False:
         print("Association déjà existante")
-    if associate(ip_B, ip_A) == False:
-        print("Association déjà existante")

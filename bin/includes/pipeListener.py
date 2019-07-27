@@ -53,6 +53,7 @@ class PipeListener(threading.Thread):
                     request = pipe.readline()
                     if request == "":
                         break
+                    print("PIPE :", request)
                     request = request.strip()
                     args = request.split(" ")
                     print(args)

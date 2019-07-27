@@ -6,7 +6,6 @@ config['TCP_SRV_IP'] = "172.16.100.129"
 config['TCP_SRV_PORT'] = 1500
 config['PIPE'] = "/tbpipe"
 config['PIN_LENGTH'] = 6
-config['MAIL_TEMPLATE_FILE'] = "/etc/tbServer/templates/pinMailTemplate.txt"
 config['SMTP_SRV'] = ""
 config['SMTP_PORT'] = 
 config['SMTP_USER'] = ""
@@ -19,12 +18,37 @@ config['DB_WP_NAME'] = ""
 config['DB_TB_HOST'] = ""
 config['DB_TB_USER'] = ""
 config['DB_TB_PASS'] = ""
-config['DB_TB_NAME'] = ""
-config['PIPE_PATH'] = "/tmp/tbPipe"
+config['DB_TB_NAME'] = "twinbridge"
 config['CLEAN_INTERVAL'] = 60 #Every 1 minute
 config['MAX_LAB_TIME'] = 14400 #14400 seconds = 4 hours
-
-
+config['COMMIT_INTERVAL'] = 10 #Commit every one minute
+config['CONTRIBS'] = ["cdp", "ospf", "bgp", "eigrp"]
+config['ANALYZED_PROTOCOLS'] = [
+                                    {
+                                        "layer_name":"CDPv2_HDR",
+                                        "db_column":"CDP"
+                                    },
+                                    {
+                                        "layer_name":"OSPF_Hdr",
+                                        "db_column":"OSPF"
+                                    },
+                                    {
+                                        "layer_name":"EIGRP",
+                                        "db_column":"EIGRP"
+                                    },
+                                    {
+                                        "layer_name":"STP",
+                                        "db_column":"STP"
+                                    },
+                                    {
+                                        "layer_name":"RIP",
+                                        "db_column":"RIP"
+                                    },
+                                    {
+                                        "layer_name":"BGPHeader",
+                                        "db_column":"BGP"
+                                    }
+                                ]
 wpParams = {
         "host": config['DB_WP_HOST'],
         "user":config['DB_WP_USER'],
