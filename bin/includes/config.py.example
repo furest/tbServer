@@ -21,34 +21,10 @@ config['DB_TB_PASS'] = ""
 config['DB_TB_NAME'] = "twinbridge"
 config['CLEAN_INTERVAL'] = 60 #Every 1 minute
 config['MAX_LAB_TIME'] = 14400 #14400 seconds = 4 hours
+config['MAX_PROLONGATED_LAB_TIME'] = 28800 #28800 seconds = 8 hours
+config['LAST_PACKET_MIN_WAIT'] = 3600 #Don't kill lab is the last packet is sent less than 1 hour ago
 config['COMMIT_INTERVAL'] = 10 #Commit every one minute
-config['CONTRIBS'] = ["cdp", "ospf", "bgp", "eigrp"]
-config['ANALYZED_PROTOCOLS'] = [
-                                    {
-                                        "layer_name":"CDPv2_HDR",
-                                        "db_column":"CDP"
-                                    },
-                                    {
-                                        "layer_name":"OSPF_Hdr",
-                                        "db_column":"OSPF"
-                                    },
-                                    {
-                                        "layer_name":"EIGRP",
-                                        "db_column":"EIGRP"
-                                    },
-                                    {
-                                        "layer_name":"STP",
-                                        "db_column":"STP"
-                                    },
-                                    {
-                                        "layer_name":"RIP",
-                                        "db_column":"RIP"
-                                    },
-                                    {
-                                        "layer_name":"BGPHeader",
-                                        "db_column":"BGP"
-                                    }
-                                ]
+
 wpParams = {
         "host": config['DB_WP_HOST'],
         "user":config['DB_WP_USER'],
@@ -62,3 +38,8 @@ tbParams = {
         "database":config['DB_TB_NAME']
 }
 
+~                                                                                                                                                                                                                                            
+~                                                                                                                                                                                                                                            
+~                                                                                                                                                                                                                                            
+~                                                                                                                                                                                                                                            
+~             
