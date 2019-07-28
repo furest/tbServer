@@ -31,7 +31,7 @@ class LabCleaner(object):
         for lab in labs:
             now = datetime.datetime.now()
             exist_for = now - lab['started_at']
-            if (lab['prolongated'] == False and exist_for.seconds >= config['MAX_LAB_TIME']) or (lab['prolongated'] = True and exist_for.seconds >= config['MAX_PROLONGATED_LAB_TIME']):
+            if (lab['prolongated'] == False and exist_for.seconds >= config['MAX_LAB_TIME']) or (lab['prolongated'] == True and exist_for.seconds >= config['MAX_PROLONGATED_LAB_TIME']):
                 lab_stats = tb.get_lab_stats(lab_id=lab['ID'])
                 no_packets_for = now - lab_stats[0]['last_packet']
                 if lab['prolongated'] == False and no_packet_for.seconds > config['LAST_PACKET_MIN_WAIT']:
