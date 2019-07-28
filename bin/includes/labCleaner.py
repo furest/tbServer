@@ -25,21 +25,23 @@ class LabCleaner(object):
     def stop(self):
         self._timer.cancel()
         self.is_running = False
-    
+
     def cleanLabs(self):
         labs = tb.get_lab(over=False)
         for lab in labs:
             now = datetime.datetime.now()
-            diff = now - lab['started_at']
-            if diff.seconds >= config['MAX_LAB_TIME']:
-                tb.update_labs(lab['ID'], over=True)
-                client = tb.get_connected_client(ID=lab['init_academy'])
-                if len(client) != 0:
-                    delete_association(client[0]['virt_ip'])
+            exist_for = now - lab['started_at']
+            if (lab['prolongated'] == False and exist_for.seconds >= config['MAX_LAB_TIME']) or (lab['prolongated'] = True and exist_for.seconds >= config['MAX_PROLONGATED_LAB_TIME']):
+                lab_stats = tb.get_lab_stats(lab_id=lab['ID'])
+                no_packets_for = now - lab_stats[0]['last_packet']
+                if lab['prolongated'] == False and no_packet_for.seconds > config['LAST_PACKET_MIN_WAIT']:
+                    tb.update_labs(ID=lab['ID'], prolongated=True)
                 else:
-                    client = tb.get_connected_client(ID=lab['invited_academy'])
+                    tb.update_labs(lab['ID'], over=True)
+                    client = tb.get_connected_client(ID=lab['init_academy'])
                     if len(client) != 0:
                         delete_association(client[0]['virt_ip'])
-
-
-
+                    else:
+                        client = tb.get_connected_client(ID=lab['invited_academy'])
+                        if len(client) != 0:
+                            delete_association(client[0]['virt_ip'])
