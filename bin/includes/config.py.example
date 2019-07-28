@@ -23,7 +23,7 @@ config['CLEAN_INTERVAL'] = 60 #Every 1 minute
 config['MAX_LAB_TIME'] = 14400 #14400 seconds = 4 hours
 config['MAX_PROLONGATED_LAB_TIME'] = 28800 #28800 seconds = 8 hours
 config['LAST_PACKET_MIN_WAIT'] = 3600 #Don't kill lab is the last packet is sent less than 1 hour ago
-config['COMMIT_INTERVAL'] = 10 #Commit every one minute
+config['COMMIT_INTERVAL'] = 6666660 #Commit every one minute
 
 wpParams = {
         "host": config['DB_WP_HOST'],

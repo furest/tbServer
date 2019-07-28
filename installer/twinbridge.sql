@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 26, 2019 at 09:02 PM
+-- Generation Time: Jul 29, 2019 at 12:54 AM
 -- Server version: 10.1.40-MariaDB-0ubuntu0.18.04.1
 -- PHP Version: 7.2.19-0ubuntu0.18.04.1
 
@@ -48,7 +48,29 @@ CREATE TABLE `laborations` (
   `init_academy` int(11) NOT NULL,
   `started_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `invited_academy` int(11) DEFAULT NULL,
-  `over` tinyint(1) NOT NULL DEFAULT '0'
+  `over` tinyint(1) NOT NULL DEFAULT '0',
+  `prolongated` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Triggers `laborations`
+--
+DELIMITER $$
+CREATE TRIGGER `CREATE_LAB_STAT` AFTER INSERT ON `laborations` FOR EACH ROW INSERT INTO laborations_statistics(lab_id) VALUES(NEW.ID)
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `laborations_statistics`
+--
+
+CREATE TABLE `laborations_statistics` (
+  `ID` int(11) NOT NULL,
+  `nb_packets` int(11) NOT NULL,
+  `lab_id` int(11) NOT NULL,
+  `last_packet` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -69,6 +91,12 @@ ALTER TABLE `laborations`
   ADD UNIQUE KEY `PIN` (`pin`);
 
 --
+-- Indexes for table `laborations_statistics`
+--
+ALTER TABLE `laborations_statistics`
+  ADD PRIMARY KEY (`ID`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -76,7 +104,12 @@ ALTER TABLE `laborations`
 -- AUTO_INCREMENT for table `laborations`
 --
 ALTER TABLE `laborations`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+--
+-- AUTO_INCREMENT for table `laborations_statistics`
+--
+ALTER TABLE `laborations_statistics`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

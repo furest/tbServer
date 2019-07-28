@@ -22,21 +22,30 @@ iptables -I INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 #allowing OPENVPN
 iptables -t filter -A INPUT -p udp --dport 1194 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --dport 1194 -j ACCEPT
 
 #allowing OPENVPN on port 22
 iptables -t filter -A INPUT -p udp --dport 22 -j ACCEPT
 iptables -t nat -A PREROUTING -p udp --dport 22 -j REDIRECT --to-port 1194
+iptables -t filter -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -t nat -A PREROUTING -p tcp --dport 22 -j REDIRECT --to-port 1194
 
 #allowing OPENVPN on port 443
 iptables -t filter -A INPUT -p udp --dport 443 -j ACCEPT
 iptables -t nat -A PREROUTING -p udp --dport 443 -j REDIRECT --to-port 1194
+iptables -t filter -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 1194
 
 #allowing OPENVPN on port 8080
 iptables -t filter -A INPUT -p udp --dport 8080 -j ACCEPT
 iptables -t nat -A PREROUTING -p udp --dport 8080 -j REDIRECT --to-port 1194
+iptables -t filter -A INPUT -p tcp --dport 8080 -j ACCEPT
+iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-port 1194
 
 #Allowing apache HTTPS
-iptables -t filter -A INPUT -p tcp --dport 1443 -j ACCEPT
+#REDIRECTED THROUGH OPENVPN TCP/443
+#iptables -t filter -A INPUT -p tcp --dport 1443 -j ACCEPT 
+
 
 #Allowing openSSH
 iptables -t filter -A INPUT -p tcp --dport 222 -j ACCEPT
