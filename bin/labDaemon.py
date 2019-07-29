@@ -216,10 +216,11 @@ if __name__ == "__main__":
         _thread.start_new_thread(udpServer.serve_forever,())
         _thread.start_new_thread(tcpServer.serve_forever,())
         print("Server created. Now serving")
-        lm = LabCleaner()
+        lc = LabCleaner()
+        lc.start()
         print("LabCleaner launched")
-        la = LabAnalyzer()
-        la.start()
+        #la = LabAnalyzer()
+        #la.start()
         print("LabAnalyzer started")
 
     except Exception as e:

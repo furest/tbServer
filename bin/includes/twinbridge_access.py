@@ -4,43 +4,125 @@ import mysql.connector
 #Project imports
 from includes.config import *
 
-def get_connected_client(ID=None, virt_ip=None, real_ip=None, real_port=None):
+def get_tuple(table, **data):
     db = mysql.connector.connect(**tbParams)
     c = db.cursor(dictionary=True)
-    req = "SELECT * FROM connected_clients "
-    need_and = False
-    req_tuple = ()
-    if ID != None:
-        req += "WHERE ID = %s"
-        req_tuple=(ID,)
-        need_and = True
-    if virt_ip != None:
+    req = "SELECT * FROM " + table
+    need_and=False
+    req_tuple=()
+    for param in data:
         if need_and:
-            req +=" AND "
+            req += " AND "
         else:
             req += " WHERE "
-        req += " virt_ip = %s "
-        req_tuple = req_tuple + (virt_ip,)
-        need_and = True
-    if real_ip != None:
-        if need_and:
-            req +=" AND "
+        if data[param] == None:
+            req += param + "IS NULL"
+        elif data[param] == "NOTNULL":
+            req += param + "IS NOT NULL"
         else:
-            req += " WHERE "
-        req += " real_ip = %s "
-        req_tuple = req_tuple + (real_ip,)
-        need_and = True
-    if real_port != None:
-        if need_and:
-            req +=" AND "
-        else:
-            req += " WHERE "
-        req += " real_port = %s "
-        req_tuple = req_tuple + (real_port,)
-        need_and = True
+            req += param + " = %s"
+        req_tuple = req_tuple + (data[param],)
+        need_and=True
     c.execute(req, req_tuple)
-    users = c.fetchall()
-    return users
+    results = c.fetchall()
+    return results
+
+def get_lab_stats(**data):
+    return get_tuple("laborations_statistics", **data)
+
+def get_connected_client(**data):
+   return get_tuple("connected_clients", **data)
+   # db = mysql.connector.connect(**tbParams)
+   # c = db.cursor(dictionary=True)
+   # req = "SELECT * FROM connected_clients "
+   # need_and = False
+   # req_tuple = ()
+   # if ID != None:
+   #     req += "WHERE ID = %s"
+   #     req_tuple=(ID,)
+   #     need_and = True
+   # if virt_ip != None:
+   #     if need_and:
+   #         req +=" AND "
+   #     else:
+   #         req += " WHERE "
+   #     req += " virt_ip = %s "
+   #     req_tuple = req_tuple + (virt_ip,)
+   #     need_and = True
+   # if real_ip != None:
+   #     if need_and:
+   #         req +=" AND "
+   #     else:
+   #         req += " WHERE "
+   #     req += " real_ip = %s "
+   #     req_tuple = req_tuple + (real_ip,)
+   #     need_and = True
+   # if real_port != None:
+   #     if need_and:
+   #         req +=" AND "
+   #     else:
+   #         req += " WHERE "
+   #     req += " real_port = %s "
+   #     req_tuple = req_tuple + (real_port,)
+   #     need_and = True
+   # c.execute(req, req_tuple)
+   # users = c.fetchall()
+   # return users
+
+def get_lab(**data):
+    return get_tuple("laborations", **data)
+   # db = mysql.connector.connect(**tbParams)
+   # c = db.cursor(dictionary=True)
+   # req = "SELECT * FROM laborations"
+   # need_and=False
+   # req_tuple = ()
+   # if ID != None:
+   #     req += " WHERE ID = %s"
+   #     req_tuple=(ID,)
+   #     need_and = True
+   # if pin != None:
+   #     if need_and:
+   #         req +=" AND "
+   #     else:
+   #         req += " WHERE "
+   #     req += " pin = %s "
+   #     req_tuple = req_tuple + (pin,)
+   #     need_and = True
+   # if init_academy != None:
+   #     if need_and:
+   #         req +=" AND "
+   #     else:
+   #         req += " WHERE "
+   #     req += " init_academy = %s "
+   #     req_tuple = req_tuple + (init_academy,)
+   #     need_and = True
+   # if invited_academy != None:
+   #     if need_and:
+   #         req +=" AND "
+   #     else:
+   #         req += " WHERE "
+   #     req += " invited_academy = %s "
+   #     req_tuple = req_tuple + (invited_academy,)
+   #     need_and = True
+   # if started_at != None:
+   #     if need_and:
+   #         req +=" AND "
+   #     else:
+   #         req += " WHERE "
+   #     req += " started_at = %s "
+   #     req_tuple = req_tuple + (started_at,)
+   #     need_and = True
+   # if over != None:
+   #     if need_and:
+   #         req +=" AND "
+   #     else:
+   #         req += " WHERE "
+   #     req += " over = %s "
+   #     req_tuple = req_tuple + (over,)
+   #     need_and = True
+   # c.execute(req, req_tuple)
+   # labs = c.fetchall()
+   # return labs
 
 def delete_connected_client(ID):
     return delete_tuple("connected_clients", ID)
@@ -96,59 +178,6 @@ def insert_lab(init_academy, pin=None, invited_academy=None, over=False):
         db.rollback()
         raise e
 
-def get_lab(ID=None, pin=None, init_academy=None, invited_academy=None, started_at=None, over=None):
-    db = mysql.connector.connect(**tbParams)
-    c = db.cursor(dictionary=True)
-    req = "SELECT * FROM laborations"
-    need_and=False
-    req_tuple = ()
-    if ID != None:
-        req += " WHERE ID = %s"
-        req_tuple=(ID,)
-        need_and = True
-    if pin != None:
-        if need_and:
-            req +=" AND "
-        else:
-            req += " WHERE "
-        req += " pin = %s "
-        req_tuple = req_tuple + (pin,)
-        need_and = True
-    if init_academy != None:
-        if need_and:
-            req +=" AND "
-        else:
-            req += " WHERE "
-        req += " init_academy = %s "
-        req_tuple = req_tuple + (init_academy,)
-        need_and = True
-    if invited_academy != None:
-        if need_and:
-            req +=" AND "
-        else:
-            req += " WHERE "
-        req += " invited_academy = %s "
-        req_tuple = req_tuple + (invited_academy,)
-        need_and = True
-    if started_at != None:
-        if need_and:
-            req +=" AND "
-        else:
-            req += " WHERE "
-        req += " started_at = %s "
-        req_tuple = req_tuple + (started_at,)
-        need_and = True
-    if over != None:
-        if need_and:
-            req +=" AND "
-        else:
-            req += " WHERE "
-        req += " over = %s "
-        req_tuple = req_tuple + (over,)
-        need_and = True
-    c.execute(req, req_tuple)
-    labs = c.fetchall()
-    return labs
 
 def update_connected_client(ID, **data):
     """
@@ -203,4 +232,4 @@ def update_tuple(table, ID, **data):
         raise e
 
     return True
- 
+

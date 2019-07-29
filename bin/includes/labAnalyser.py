@@ -15,7 +15,9 @@ class LabAnalyzer(Thread):
 
     def run(self):
         self.launch_commit_timer()
-        sniff(store=False,iface=['tunUDP', 'tunTCP'],filter="(dst host 172.16.100.1 or dst host 172.16.100.129) and udp dst port 4789", prn=self.analyze_packet)
+        sockUDP = conf.L2listen(type=ETH_P_IP, iface='tunUDP', filter="udp dst port 4789 and dst host 172.16.100.1")
+        sockTCP = conf.L2listen(type=ETH_P_IP, iface='tunTCP', filter="udp dst port 4789 and dst host 172.16.100.129")
+        sniff(store=False,opened_socket=[sockUDP, sockTCP],prn=self.analyze_packet)
 
     def commit(self):
         db = mysql.connector.connect(**tbParams)

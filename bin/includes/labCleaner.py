@@ -34,7 +34,8 @@ class LabCleaner(object):
             if (lab['prolongated'] == False and exist_for.seconds >= config['MAX_LAB_TIME']) or (lab['prolongated'] == True and exist_for.seconds >= config['MAX_PROLONGATED_LAB_TIME']):
                 lab_stats = tb.get_lab_stats(lab_id=lab['ID'])
                 no_packets_for = now - lab_stats[0]['last_packet']
-                if lab['prolongated'] == False and no_packet_for.seconds > config['LAST_PACKET_MIN_WAIT']:
+                print("lab " + str(lab['ID']) + " has had no packet for " + str(no_packets_for.seconds))
+                if lab['prolongated'] == False and no_packets_for.seconds < config['LAST_PACKET_MIN_WAIT']:
                     tb.update_labs(ID=lab['ID'], prolongated=True)
                 else:
                     tb.update_labs(lab['ID'], over=True)
