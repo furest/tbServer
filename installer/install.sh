@@ -120,7 +120,7 @@ function erase_installfiles() {
 function configure_iptables() {
     sudo bash $install_dir/scripts/init_iptables.sh
 }
-function install_raspap() {
+function install() {
     display_welcome
     config_installation
     install_apt_packages
@@ -128,9 +128,12 @@ function install_raspap() {
     download_tbserver
     configure_openvpn
     configure_mysql
+    compile_analyze
     create_services
     erase_installfiles
     install_complete
 }
+
+install
 
 
