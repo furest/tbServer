@@ -81,7 +81,7 @@ function install_apt_packages() {
 }
 
 function install_pip_packages() {
-    sudo pip3 install passlib python-iptables scapy
+    sudo pip3 install passlib python-iptables scapy mysql
 }
 
 function create_services() {
