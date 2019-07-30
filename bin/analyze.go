@@ -17,13 +17,13 @@ import (
 )
 
 var (
-	commit_interval time.Duration
-	devices         []string          = []string{"tunUDP", "tunTCP"}
-	snapshot_len    int32             = 65535
-	promiscuous     bool              = false
-	packets         map[string]uint32 = make(map[string]uint32)
-	mutex           sync.Mutex
-	db              *sql.DB
+	commitInterval time.Duration
+	devices              = []string{"tunUDP", "tunTCP"}
+	snapshotLen    int32 = 65535
+	promiscuous          = false
+	packets              = make(map[string]uint32)
+	mutex          sync.Mutex
+	db             *sql.DB
 )
 
 func commitPackets() {
@@ -70,7 +70,7 @@ func commitPackets() {
 }
 
 func capturePackets(iface string) {
-	handle, err := pcap.OpenLive(iface, snapshot_len, promiscuous, pcap.BlockForever)
+	handle, err := pcap.OpenLive(iface, snapshotLen, promiscuous, pcap.BlockForever)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,12 +110,13 @@ func loadConfig(path string) map[string]interface{} {
 	return result
 }
 func main() {
-	var err error
+
 	config := loadConfig("includes/config.json")
-	commit_interval = time.Second * time.Duration(int(config["COMMIT_INTERVAL"].(float64)))
+	commitInterval = time.Second * time.Duration(int(config["commitInterval"].(float64)))
 	//Open database
 	connectionString := config["DB_TB_USER"].(string) + ":" + config["DB_TB_PASS"].(string) + "@tcp(" + config["DB_TB_HOST"].(string) + ")/" + config["DB_TB_NAME"].(string)
-	db, err = sql.Open("mysql", connectionString)
+	fmt.Println(connectionString)
+	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -129,6 +130,6 @@ func main() {
 	for _, iface := range devices {
 		go capturePackets(iface)
 	}
-	doEvery(commit_interval, commitPackets)
+	doEvery(commitInterval, commitPackets)
 }
 
