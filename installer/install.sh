@@ -73,7 +73,7 @@ function install_complete() {
 
 function install_apt_packages() {
     sudo apt-get update
-    sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump golang libpcap-dev
+    sudo apt-get install openvpn mariadb-server libmariadbclient-dev python3 python3-pip git tcpdump golang libpcap-dev
     mkdir ~/go
     echo "GOPATH=~/go" >> ~/.bashrc
     source ~/.bashrc
