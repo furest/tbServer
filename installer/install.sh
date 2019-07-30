@@ -73,15 +73,19 @@ function install_complete() {
 
 function install_apt_packages() {
     sudo apt-get update
-    sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump golang
+    sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump golang libpcap-dev
+    mkdir ~/go
+    echo "GOPATH=~/go" >> ~/.bashrc
+    source ~/.bashrc
+    
 }
 
 function install_pip_packages() {
-    sudo pip3 install passlib python-iptables scapy
+    sudo pip3 install passlib python-iptables scapy mysql-connector
 }
 
 function create_services() {
-    sudo cp "${install_dir}/installer/etc/systemd/system/*.service" "/etc/systemd/system/" 
+    sudo cp ${install_dir}/installer/etc/systemd/system/*.service /etc/systemd/system/
     sudo systemctl daemon-reload
     sudo systemctl enable twinbridge
     sudo systemctl enable twinbridge-labManager
@@ -103,11 +107,13 @@ function download_tbserver() {
 function configure_mysql() {
     sudo mysql < $install_dir/installer/twinbridge.sql
     tb_password=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-10};echo;`
-    sudo mysql --database twinbridge --execute="CREATE USER 'twinbridge'@'localhost' IDENTIFIED BY ${tb_password}; GRANT ALL ON twinbridge.* to 'twinbridge'@'localhost'; FLUSH PRIVILEGES;"
+    sudo mysql --database twinbridge --execute="CREATE USER 'twinbridge'@'localhost' IDENTIFIED BY '${tb_password}'; GRANT ALL ON twinbridge.* to 'twinbridge'@'localhost'; FLUSH PRIVILEGES;"
 }
 function compile_analyze() {
-	sudo go get "${install_dir}/bin/analyze.go"
+	cd ${install_dir}/bin
+	sudo go get
 	sudo go build "${install_dir}/bin/analyze.go"
+	cd -
 }
 function erase_installfiles() {
     sudo rm -r "${install_dir}/installer"
@@ -116,7 +122,7 @@ function erase_installfiles() {
 function configure_iptables() {
     sudo bash $install_dir/scripts/init_iptables.sh
 }
-function install_raspap() {
+function install() {
     display_welcome
     config_installation
     install_apt_packages
@@ -124,9 +130,12 @@ function install_raspap() {
     download_tbserver
     configure_openvpn
     configure_mysql
+    compile_analyze
     create_services
     erase_installfiles
     install_complete
 }
+
+install
 
 
