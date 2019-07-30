@@ -3,5 +3,4 @@ __pycache__/
 *.crt
 *.key
 *.pem
-config.py
 config.json

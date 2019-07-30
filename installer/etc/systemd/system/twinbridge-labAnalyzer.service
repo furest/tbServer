@@ -1,0 +1,15 @@
+[Unit]
+Description=Service that analyzes packets exchanged between academies
+PartOf=twinbridge.service
+ReloadPropagatedFrom=twinbridge.service
+After=twinbridge.service
+
+[Service]
+Type=simple
+WorkingDirectory=/etc/tbServer/bin
+ExecStart=/etc/tbServer/bin/analyze
+RestartSec=10s
+Restart=on-failure
+KillMode=process
+[Install]
+WantedBy=twinbridge.service 

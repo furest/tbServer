@@ -73,7 +73,7 @@ function install_complete() {
 
 function install_apt_packages() {
     sudo apt-get update
-    sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump
+    sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump golang
 }
 
 function install_pip_packages() {
@@ -83,14 +83,17 @@ function install_pip_packages() {
 function create_services() {
     sudo cp "${install_dir}/installer/etc/systemd/system/*.service" "/etc/systemd/system/" 
     sudo systemctl daemon-reload
-    sudo systemctl enable labdaemon
-    sudo systemctl enable listenudp
+    sudo systemctl enable twinbridge
+    sudo systemctl enable twinbridge-labManager
+    sudo systemctl enable twinbridge-labCleaner
+    sudo systemctl enable twinbridge-labAnalyzer
+    sudo systemctl enable twinbridge-listenUDP
 }
 
 function configure_openvpn(){
     sudo cp -r "${install_dir}/installer/etc/openvpn" "/etc/openvpn"
-    sudo systemctl enable openvpn@TCPServer
-    sudo systemctl enable openvpn@UDPServer
+    sudo systemctl enable openvpn-server@TCPServer
+    sudo systemctl enable openvpn-server@UDPServer
 }
 
 function download_tbserver() {
@@ -102,7 +105,10 @@ function configure_mysql() {
     tb_password=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-10};echo;`
     sudo mysql --database twinbridge --execute="CREATE USER 'twinbridge'@'localhost' IDENTIFIED BY ${tb_password}; GRANT ALL ON twinbridge.* to 'twinbridge'@'localhost'; FLUSH PRIVILEGES;"
 }
-
+function compile_analyze() {
+	sudo go get "${install_dir}/bin/analyze.go"
+	sudo go build "${install_dir}/bin/analyze.go"
+}
 function erase_installfiles() {
     sudo rm -r "${install_dir}/installer"
 }
