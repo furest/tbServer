@@ -5,6 +5,7 @@
 "TCP_SRV_PORT":1500,
 "PIPE":"/tbpipe",
 "PIN_LENGTH":6,
+"MAIL_TEMPLATE_FILE":"/etc/tbServer/templates/pinMailTemplate.txt",
 "SMTP_SRV":"",
 "SMTP_PORT":,
 "SMTP_USER":"",

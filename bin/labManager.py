@@ -14,8 +14,6 @@ from includes.sendMail import *
 from includes.pipeListener import *
 import includes.wordpress_access as wp
 import includes.twinbridge_access as tb
-from includes.labCleaner import *
-from includes.labAnalyser import *
 class labRequestHandler(socketserver.StreamRequestHandler):
     """
     Handles the requests.
