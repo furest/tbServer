@@ -29,32 +29,32 @@ def associate(from_ip, to_ip):
     table_nat = iptc.Table(iptc.Table.NAT)
     table_nat.Autocommit = False
 
-    chain_filter_FORWARD = iptc.Chain(table_filter, "VPN_FW")
-    chain_nat_PREROUTING = iptc.Chain(table_nat, "PREROUTING")
+    chain_filter_VPN_FW = iptc.Chain(table_filter, "VPN_FW")
+    chain_nat_VPN_FW = iptc.Chain(table_nat, "VPN_FW")
 
     skipAB = False
-    for rule in chain_filter_FORWARD.rules:
+    for rule in chain_filter_VPN_FW.rules:
         if rule.src.split('/')[0] == from_ip or rule.dst.split('/')[0] == from_ip:
            print("association from", from_ip, "to", to_ip, "has been skippep because already present.")
            return False
 
     skipBA = False
-    for rule in chain_filter_FORWARD.rules:
+    for rule in chain_filter_VPN_FW.rules:
         if rule.src.split('/')[0] == to_ip or rule.dst.split('/')[0] == to_ip:
            print("association from", to_ip, "to", from_ip, "has been skippep because already present.")
            return False
 
     if not skipAB:
         FWRuleAB = makeFWRule(from_ip, to_ip)
-        chain_filter_FORWARD.insert_rule(FWRuleAB)
+        chain_filter_VPN_FW.insert_rule(FWRuleAB)
         NATRuleAB = makeNATRule(from_ip, to_ip)
-        chain_nat_PREROUTING.insert_rule(NATRuleAB)
+        chain_nat_VPN_FW.insert_rule(NATRuleAB)
 
     if not skipBA:
         FWRuleBA = makeFWRule(to_ip, from_ip)
-        chain_filter_FORWARD.insert_rule(FWRuleBA)
+        chain_filter_VPN_FW.insert_rule(FWRuleBA)
         NATRuleBA = makeNATRule(to_ip, from_ip)
-        chain_nat_PREROUTING.insert_rule(NATRuleBA)
+        chain_nat_VPN_FW.insert_rule(NATRuleBA)
 
     table_filter.commit()
     table_nat.commit()
@@ -66,16 +66,16 @@ def delete_association(virt_ip):
     print("deleting association of", virt_ip)
     
     table_filter = iptc.Table(iptc.Table.FILTER)
-    chain_filter_VPNFORWARD = iptc.Chain(table_filter, "VPN_FW")
+    chain_filter_VPN_FW = iptc.Chain(table_filter, "VPN_FW")
     
     table_filter.refresh()
     table_filter.Autocommit = False
     deleted = True
     while deleted:
         deleted = False
-        for fwrule in chain_filter_VPNFORWARD.rules:
+        for fwrule in chain_filter_VPN_FW.rules:
             if fwrule.src.split('/')[0]  == virt_ip or fwrule.dst.split('/')[0] == virt_ip:
-                chain_filter_VPNFORWARD.delete_rule(fwrule)
+                chain_filter_VPN_FW.delete_rule(fwrule)
                 print("FW:putting", str(fwrule), "aside")
                 deleted = True
                 break
@@ -83,22 +83,22 @@ def delete_association(virt_ip):
     table_filter.autocommit = True
     
     table_nat = iptc.Table(iptc.Table.NAT)
-    chain_nat_PREROUTING = iptc.Chain(table_nat, "PREROUTING")
+    chain_nat_VPN_FW = iptc.Chain(table_nat, "VPN_FW")
     table_nat.refresh() 
     table_nat.Autocommit = False
     
     deleted = True
     while deleted:
         deleted = False
-        for natrule in chain_nat_PREROUTING.rules:
+        for natrule in chain_nat_VPN_FW.rules:
             if natrule.src.split("/")[0] == virt_ip \
             or natrule.target.parameters.get("to_destination", "") == virt_ip:
-                chain_nat_PREROUTING.delete_rule(natrule)
+                chain_nat_VPN_FW.delete_rule(natrule)
                 print("NAT:putting", str(natrule), "aside")
                 deleted = True
                 break
     #for rule in nat_to_delete:
-    #    chain_nat_PREROUTING.delete_rule(rule)
+    #    chain_nat_VPN_FW.delete_rule(rule)
     table_nat.commit()
     table_nat.autocommit = True
     return True
@@ -113,3 +113,4 @@ if __name__ == "__main__":
 
     if associate(ip_A, ip_B) == False:
         print("Association déjà existante")
+

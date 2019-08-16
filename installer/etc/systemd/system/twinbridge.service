@@ -3,8 +3,8 @@
 [Unit]
 Description=Twinbridge Service
 After=network.target
-BindsTo=openvpn@TCPServer.service openvpn@UDPServer.service
-After=openvpn@TCPServer.service openvpn@UDPServer.service
+BindsTo=openvpn.service
+After=openvpn.service
 
 [Service]
 Type=oneshot
