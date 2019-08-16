@@ -81,7 +81,7 @@ function install_apt_packages() {
 }
 
 function install_pip_packages() {
-    sudo pip3 install passlib python-iptables scapy mysql-connector
+    sudo pip3 install passlib python-iptables scapy mysql-connector netaddr
 }
 
 function create_services() {
