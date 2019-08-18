@@ -112,10 +112,9 @@ func loadConfig(path string) map[string]interface{} {
 func main() {
 
 	config := loadConfig("includes/config.json")
-	commitInterval = time.Second * time.Duration(int(config["commitInterval"].(float64)))
+	commitInterval = time.Second * time.Duration(int(config["COMMIT_INTERVAL"].(float64)))
 	//Open database
 	connectionString := config["DB_TB_USER"].(string) + ":" + config["DB_TB_PASS"].(string) + "@tcp(" + config["DB_TB_HOST"].(string) + ")/" + config["DB_TB_NAME"].(string)
-	fmt.Println(connectionString)
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -127,6 +126,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	db.SetConnMaxLifetime(1 * time.Hour)
 	for _, iface := range devices {
 		go capturePackets(iface)
 	}
