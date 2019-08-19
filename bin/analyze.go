@@ -110,12 +110,12 @@ func loadConfig(path string) map[string]interface{} {
 	return result
 }
 func main() {
-
+	var err error
 	config := loadConfig("includes/config.json")
 	commitInterval = time.Second * time.Duration(int(config["COMMIT_INTERVAL"].(float64)))
 	//Open database
 	connectionString := config["DB_TB_USER"].(string) + ":" + config["DB_TB_PASS"].(string) + "@tcp(" + config["DB_TB_HOST"].(string) + ")/" + config["DB_TB_NAME"].(string)
-	db, err := sql.Open("mysql", connectionString)
+	db, err = sql.Open("mysql", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
