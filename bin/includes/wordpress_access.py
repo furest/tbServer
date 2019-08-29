@@ -87,7 +87,7 @@ def get_twining_user(ID):
         return False
     db = mysql.connector.connect(**wpParams)
     c = db.cursor(dictionary=True)
-    c.execute("SELECT * FROM wp_twinings WHERE academy_1 = %s OR academy_2 = %s",(ID, ID))
+    c.execute("SELECT * FROM wp_twinings WHERE academy_1 = %s OR academy_2 = %s AND approved=true",(ID, ID))
     twinings = c.fetchall()
     return twinings
 
@@ -103,6 +103,7 @@ def get_twining_user_complete(ID):
             INNER JOIN wp_users a1 ON a1.ID = wp_twinings.academy_1\
             INNER JOIN wp_users a2 ON a2.ID = wp_twinings.academy_2\
             WHERE a2.ID =  %s\
+            AND wp_twinings.approved=true\
             UNION ALL\
             SELECT a2.user_login AS login,\
                     a2.user_email AS email,\
@@ -111,7 +112,8 @@ def get_twining_user_complete(ID):
             FROM wp_twinings\
             INNER JOIN wp_users a1 ON a1.ID = wp_twinings.academy_1\
             INNER JOIN wp_users a2 ON a2.ID = wp_twinings.academy_2\
-            WHERE a1.ID =  %s", client)
+            WHERE a1.ID =  %s\
+            AND wp_twinings.approved=true", client)
     twlist = c.fetchall()
     return twlist 
 
