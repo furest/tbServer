@@ -70,6 +70,7 @@ func commitPackets() {
 }
 
 func capturePackets(iface string) {
+	fmt.Println("Listening packets on " + iface)
 	handle, err := pcap.OpenLive(iface, snapshotLen, promiscuous, pcap.BlockForever)
 	if err != nil {
 		log.Fatal(err)

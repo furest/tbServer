@@ -57,7 +57,7 @@ iptables -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
 
 #Allowing routing daemon from VPN
 iptables -t filter -A INPUT -p tcp --dport 1500 -d 172.16.100.1 -s 172.16.100.0/25 -j ACCEPT
-iptables -t filter -A INPUT -p tcp --dport 1500 -d 172.16.100.129 -s 172.16.100.0/25 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --dport 1500 -d 172.16.100.129 -s 172.16.100.128/25 -j ACCEPT
 
 #Allowing all localhost traffic
 iptables -t filter -A INPUT -i lo -j ACCEPT

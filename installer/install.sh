@@ -85,6 +85,7 @@ function install_pip_packages() {
 }
 
 function create_services() {
+    sudo groupadd twinbridge
     sudo cp ${install_dir}/installer/etc/systemd/system/*.service /etc/systemd/system/
     sudo systemctl daemon-reload
     sudo systemctl enable twinbridge
