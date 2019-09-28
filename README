@@ -1,0 +1,18 @@
+To do after install:
+
+Create SSL keys with OpenVPN EasyRSA : 
+  https://github.com/OpenVPN/easy-rsa
+  https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-ubuntu-18-04
+  
+  !!!The client ovpn files will require modification to include the latest CA key of the new server!!!
+  
+Edit config 
+Clone example config /etc/tbServer/bin/includes/config.json.example and complete the values
+  /etc/tbServer/bin/includes/config.json
+  +DB credentials for twinbridge database
+  +DB credentials for WordPress database
+  +SMTP credentials for email account
+  
+
+
+
