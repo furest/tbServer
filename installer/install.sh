@@ -73,6 +73,22 @@ function create_services() {
 
 function configure_openvpn(){
     sudo cp -r ${install_dir}/installer/etc/openvpn/* /etc/openvpn
+    cd
+    wget https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz -O EasyRSA.tgz
+    tar -xvf EasyRSA.tgz
+    rm EasyRSA.tgz
+    cd EasyRSA-v3.0.6
+    ./easyrsa init-pki
+    echo "ca_crt" | ./easyrsa build-ca nopass
+    echo "srv_crt" | ./easyrsa build-server-full srv_crt nopass
+    ./easyrsa gen-dh
+    sudo cp pki/ca.crt /etc/openvpn/
+    sudo cp pki/private/srv_crt.key /etc/openvpn/server.key
+    sudo cp pki/issued/srv_crt.crt /etc/openvpn/server.crt
+    sudo cp pki/dh.pem /etc/openvpn/dh.pem
+    sudo openvpn --genkey --secret /etc/openvpn/ta.key
+    ip_addr=`ip route show default | sed 's/.*src\s\([0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\).*/\1/g'`
+    sudo sed -i -e "s/\(.*\){ip_addr}\(.*\)/\1$ip_addr\2/" /etc/openvpn/*.conf
     sudo systemctl enable openvpn-server@TCPServer
     sudo systemctl enable openvpn-server@UDPServer
 }
@@ -111,15 +127,6 @@ function configure_ssh() {
 
 function install_complete() {
     install_log "Installation completed!"
-    install_warning "Please create your own PKI for OpenVPN"
-    install_warning "The following files must be created:"
-    install_warning "- ca.crt       The CA certificate"
-    install_warning "- dh.pem       A diffie-hellman key"
-    install_warning "- ta.key       An openvpn static key"
-    install_warning "- server.crt   The server certificate"
-    install_warning "- server.key   The server public key"
-    install_warning "Please check steps 1 to 3 at https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-ubuntu-18-04"
-    install_warning ""
     install_warning "mariadb username is 'twinbridge' and password is '${tb_password}'"
     echo ""
     install_warning "Iptables rules will now be applied. If you are connected using SSH you will be disconnected."
