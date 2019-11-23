@@ -48,36 +48,12 @@ function config_installation() {
     fi
 }
 
-
-function install_complete() {
-    install_log "Installation completed!"
-    install_warning "Please create your own PKI for OpenVPN"
-    install_warning "The following files must be created:"
-    install_warning "- ca.crt       The CA certificate"
-    install_warning "- dh.pem       A diffie-hellman key"
-    install_warning "- ta.key       An openvpn static key"
-    install_warning "- server.crt   The server certificate"
-    install_warning "- server.key   The server public key"
-    install_warning "Please check steps 1 to 3 at https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-ubuntu-18-04"
-    install_warning ""
-    install_warning "mariadb username is 'twinbridge' and password is '${tb_password}'"
-
-    echo -n "The system needs to be rebooted as a final step. Reboot now? [y/N]: "
-    read answer
-    if [[ $answer != "y" ]]; then
-        echo "Installation reboot aborted."
-        exit 0
-    fi
-    sudo shutdown -r now || install_error "Unable to execute shutdown"
-}
-
 function install_apt_packages() {
     sudo apt-get update
     sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump golang libpcap-dev iptables-persistent netfilter-persistent
     mkdir ~/go
     echo "GOPATH=~/go" >> ~/.bashrc
-    source ~/.bashrc
-    
+    source ~/.bashrc    
 }
 
 function install_pip_packages() {
@@ -110,12 +86,14 @@ function configure_mysql() {
     tb_password=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-10};echo;`
     sudo mysql --database twinbridge --execute="CREATE USER 'twinbridge'@'localhost' IDENTIFIED BY '${tb_password}'; GRANT ALL ON twinbridge.* to 'twinbridge'@'localhost'; FLUSH PRIVILEGES;"
 }
+
 function compile_analyze() {
 	cd ${install_dir}/bin
 	sudo go get
 	sudo go build "${install_dir}/bin/analyze.go"
 	cd -
 }
+
 function erase_installfiles() {
     sudo rm -r "${install_dir}/installer"
 }
@@ -124,6 +102,36 @@ function configure_iptables() {
     sudo bash $install_dir/scripts/init_iptables.sh
     sudo netfilter-persistent save
     sudo netfilter-persistent start
+}
+
+function configure_ssh() {
+    sudo sed -i "/^#Port 22/c\Port 222" /etc/ssh/sshd_config
+    sudo systemctl restart sshd
+}
+
+function install_complete() {
+    install_log "Installation completed!"
+    install_warning "Please create your own PKI for OpenVPN"
+    install_warning "The following files must be created:"
+    install_warning "- ca.crt       The CA certificate"
+    install_warning "- dh.pem       A diffie-hellman key"
+    install_warning "- ta.key       An openvpn static key"
+    install_warning "- server.crt   The server certificate"
+    install_warning "- server.key   The server public key"
+    install_warning "Please check steps 1 to 3 at https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-ubuntu-18-04"
+    install_warning ""
+    install_warning "mariadb username is 'twinbridge' and password is '${tb_password}'"
+    echo ""
+    install_warning "Iptables rules will now be applied. If you are connected using SSH you will be disconnected."
+    echo -n "The system needs to be rebooted as a final step. Reboot now? [y/N]: "
+    read answer
+    configure_iptables
+    configure_ssh
+    if [[ $answer != "y" ]]; then
+        echo "Installation reboot aborted."
+        exit 0
+    fi
+    sudo shutdown -r now || install_error "Unable to execute shutdown"
 }
 function install() {
     display_welcome
