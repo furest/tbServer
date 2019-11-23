@@ -73,7 +73,7 @@ function install_complete() {
 
 function install_apt_packages() {
     sudo apt-get update
-    sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump golang libpcap-dev
+    sudo apt-get install openvpn mariadb-server python3 python3-pip git tcpdump golang libpcap-dev iptables-persistent netfilter-persistent
     mkdir ~/go
     echo "GOPATH=~/go" >> ~/.bashrc
     source ~/.bashrc
@@ -122,6 +122,8 @@ function erase_installfiles() {
 
 function configure_iptables() {
     sudo bash $install_dir/scripts/init_iptables.sh
+    sudo netfilter-persistent save
+    sudo netfilter-persistent start
 }
 function install() {
     display_welcome
