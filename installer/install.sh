@@ -96,7 +96,7 @@ function create_services() {
 }
 
 function configure_openvpn(){
-    sudo cp -r "${install_dir}/installer/etc/openvpn" "/etc/openvpn"
+    sudo cp -r "${install_dir}/installer/etc/openvpn/*" "/etc/openvpn"
     sudo systemctl enable openvpn-server@TCPServer
     sudo systemctl enable openvpn-server@UDPServer
 }
